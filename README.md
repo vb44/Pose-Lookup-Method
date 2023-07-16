@@ -16,7 +16,7 @@ Three applications are provided:
 PLuM stems from the Maximum Sum of Evidence (MSoE) method detailed here: https://doi.org/10.3390/s21196473.
 
 ## Dependencies
-* The *Eigen* library for matrix operations: https://eigen.tuxfamily.org/dox/GettingStarted.html
+* The *Eigen* library for matrix operations: https://eigen.tuxfamily.org/dox/GettingStarted.html or https://linux.how2shout.com/how-to-install-eigen-c-library-on-ubuntu-22-04-or-20-04/ 
 * Open3D for lookup table generation and raycasting: http://www.open3d.org/docs/release/compilation.html#compilation
 * Boost library for Gaussian noise generation: https://linux.how2shout.com/how-to-install-boost-c-on-ubuntu-20-04-or-22-04/ 
 
