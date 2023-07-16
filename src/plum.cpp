@@ -1,12 +1,18 @@
 /*
- * PLUM.CPP
- * This file implements the PLuM algorithm published at: https://doi.org/10.3390/s23063085
- * The purpose of this file is to provide a simple to understand implementation
- * of the algorithm - the aim is to keep it readable!
- * The GPU results reported in the paper are performed with a slightly
- * different algorithm using different variable types etc. to suit GPU
- * operations. Please contact v.bhandari@uq.edu.au for more details
- * about the GPU version.
+ PLUM.CPP
+ This file implements the PLuM algorithm published at: https://doi.org/10.3390/s23063085
+ The purpose of this file is to provide a simple to understand implementation
+ of the algorithm - the aim is to keep it readable!
+ The GPU results reported in the paper are performed with a slightly
+ different algorithm using different variable types etc. to suit GPU
+ operations. Please contact v.bhandari@uq.edu.au for more details
+ about the GPU version.
+ 
+ TODO: 
+    - Add error-checking for argument parsing.
+    
+Author: Vedant Bhandari
+Last modified: 16/07/2023
 */
 
 #include "helper.h"
