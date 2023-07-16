@@ -1,0 +1,13 @@
+pointCloudFile                  : ../sample_data/bunny_pointcloud
+LOOKUP_TABLE_lookupTableFile    : ../sample_data/bunny_lookupTable
+LOOKUP_TABLE_lookupToModel      : 0,0,0,50,40,10
+LOOKUP_TABLE_maxXYZ             : 100,100,100
+LOOKUP_TABLE_stepSize           : 1
+SEARCH_HEURISTIC_seed           : 0,0,20,25,15,-10
+SEARCH_HEURISTIC_minDeviation   : -180,-180,-180,-10,-10,-10 
+SEARCH_HEURISTIC_maxDeviation   : 180,180,180,10,10,10
+SEARCH_HEURISTIC_stepSizes      : 60,60,60,2,2,2
+SEARCH_HEURISTIC_rotSigma       : 0.05
+SEARCH_HEURISTIC_transSigma     : 3
+SEARCH_HEURISTIC_noIterations   : 40
+SEARCH_HEURISTIC_resampleSize   : 1000

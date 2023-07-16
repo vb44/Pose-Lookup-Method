@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.18)
 
 project(PLuM LANGUAGES C CXX)
 
-
 add_compile_options(-std=c++17 -O3)
 
 # add an executable called plum
-add_executable(plum main.cpp helper.cpp)
+add_executable(plum plum.cpp helper.cpp)
 
 find_package(Open3D REQUIRED)
 

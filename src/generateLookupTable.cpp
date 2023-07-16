@@ -1,61 +1,71 @@
+/*
+This file generates a lookup table given,
+    - a geometry model,
+    - the homogeneous transform from the sensor to the model,
+    - the maximum bounds of the lookup table,
+    - the stepsize of the points in the lookup table, and
+    - the standard deviation (sigma) of the reward funtion.
+TODO: 
+    - Add error-checking for argument parsing.
+    - Only reward points where a ray can intersect the geometry.
+        - I.e., not on the inside of a geometry.
+
+Author: Vedant Bhandari
+Last modified: 16/07/2023
+*/
+
 #include "helper.h"
-#include <typeinfo>
-#include <memory>
+
+// Use the open3d library to perform the raycasting operations.
 #include "open3d/Open3D.h"
 #include "open3d/t/geometry/RaycastingScene.h"
 #include "open3d/core/EigenConverter.h"
-// #include <iostream>
 
 int main(int argc, char* argv[])
 {
-    std::string fileName = "../sample_data/StanfordBunny.stl";
-    std::string lookupFilename = "../outputs/bunny_lookup_table_sigma_1m_stepSize_1mm.lookup";
-    Eigen::MatrixXd lookupToModel = homogeneous(0,0,0,50,40,10);
-    double stepSize = 1;
-    int maxXYZ[3] = {100,100,100}; // [x,y,z]
-    double sigma = 1;
+    // Argument parsing.
+    lookupTableParams params;
+    int err =  parseArgsLookupTable(&params, argc, argv);
+    if (err) exit(1);
 
-    // GENERATE THE QUERY POINTS
-    unsigned int numX = round(maxXYZ[0]/stepSize) + 1;
-    unsigned int numY = round(maxXYZ[1]/stepSize) + 1;
-    unsigned int numZ = round(maxXYZ[2]/stepSize) + 1;
-    Eigen::VectorXd xPts = Eigen::VectorXd::LinSpaced(numX,0,maxXYZ[0]);
-    Eigen::VectorXd yPts = Eigen::VectorXd::LinSpaced(numY,0,maxXYZ[1]);
-    Eigen::VectorXd zPts = Eigen::VectorXd::LinSpaced(numZ,0,maxXYZ[2]);
+    // Generate the query points in the lookup table.
+    unsigned int numX = round(params.maxXYZ[0]/params.stepSize) + 1;
+    unsigned int numY = round(params.maxXYZ[1]/params.stepSize) + 1;
+    unsigned int numZ = round(params.maxXYZ[2]/params.stepSize) + 1;
+    Eigen::VectorXd xPts = Eigen::VectorXd::LinSpaced(numX,0,params.maxXYZ[0]);
+    Eigen::VectorXd yPts = Eigen::VectorXd::LinSpaced(numY,0,params.maxXYZ[1]);
+    Eigen::VectorXd zPts = Eigen::VectorXd::LinSpaced(numZ,0,params.maxXYZ[2]);
 
-    // READ THE MESH ----------------------------------------------------------
+    // Read the geometry model.
     auto mesh = std::make_shared<open3d::geometry::TriangleMesh>();
-    open3d::io::ReadTriangleMesh(fileName,*mesh);
+    open3d::io::ReadTriangleMesh(params.modelFileName,*mesh);
     auto tmesh = open3d::t::geometry::TriangleMesh::FromLegacy(*mesh,open3d::core::Float32, open3d::core::Int64);
 
-    // TRANSFORM THE MODELT O THE LOOKUP FRAME --------------------------------
-    open3d::core::Tensor tf = open3d::core::eigen_converter::EigenMatrixToTensor(lookupToModel);
+    // Transform the model to the lookup frame.
+    open3d::core::Tensor tf = open3d::core::eigen_converter::EigenMatrixToTensor(params.lookupToModel);
     auto tmeshTf = tmesh.Transform(tf);
-
-
-    // CREATE THE SCENE -------------------------------------------------------
+    
+    // Create the scene.
     open3d::t::geometry::RaycastingScene scene;
     scene.AddTriangles(tmeshTf);
 
-    // WRITE THE LOOKUP TABLE
+    // Write the lookup table.
     std::ofstream lookupFile;
-    lookupFile.open(lookupFilename, std::ios::binary);
-
+    lookupFile.open(params.outputFileName, std::ios::binary);
     uint8_t reward;
     double queryPt[3];
-
     for (unsigned int i = 0; i < numX; i++)
     {
         for (unsigned int j = 0; j < numY; j++)
         {
             for (unsigned int k = 0; k < numZ; k++)
             {
-                // query pt
+                // Create the query point.
                 queryPt[0] = xPts(i);
                 queryPt[1] = yPts(j);
                 queryPt[2] = zPts(k);
 
-                // find the closest distance to the model
+                // Find the closest distance to the model.
                 auto queryPtTensor = open3d::core::Tensor::Zeros({1,3},open3d::core::Float32);
                 queryPtTensor.SetItem({open3d::core::TensorKey::Index(0)},
                                        open3d::core::Tensor::Init<double>({queryPt[0],queryPt[1],queryPt[2]}));
@@ -63,17 +73,20 @@ int main(int argc, char* argv[])
                 closestDistanceTensor.SetItem({open3d::core::TensorKey::Index(0)},scene.ComputeDistance(queryPtTensor));
                 auto closestDistance = open3d::core::eigen_converter::TensorToEigenMatrixXd(closestDistanceTensor);
 
-                // calculate the reward
-                reward = 255 * exp(-0.5 * closestDistance(0,0) * closestDistance(0,0) / (sigma * sigma));
+                // Calculate the reward (saved as a 8-bit number from 0-225).
+                reward = 255 * exp(-0.5 * closestDistance(0,0) * closestDistance(0,0) / (params.sigma * params.sigma));
                 
-                // write to a binary file here
+                // Write to lookup table.
                 lookupFile << reward;
             }
         }
     }
 
-    // close the file
+    // Close the file.
     lookupFile.close();
+
+    // Write the configuration file.
+    writeLookupConfigFile(&params);
 
     return 0;
 }
