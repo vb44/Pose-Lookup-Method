@@ -1,4 +1,4 @@
-#include "helper.h"
+#include "utils.hpp"
 
 Eigen::Matrix4d homogeneous(double roll, double pitch, double yaw, 
                             double x, double y, double z)
@@ -50,7 +50,9 @@ Eigen::MatrixXd readPointCloud(std::string fileName)
     float pt;
     
     while (file >> pt)
+    {
         ptsFromFile.push_back(pt);
+    }
 
     unsigned int numPts = ptsFromFile.size()/3;
     ptsRead.resize(numPts,4);
@@ -86,17 +88,23 @@ Eigen::MatrixXd generateHypotheses(plumParams* params)
 
     hypotheses.resize(numRoll*numPitch*numYaw*numX*numY*numZ,6);
 
-    for (unsigned int roll = 0; roll < numRoll; roll++) {
+    for (unsigned int roll = 0; roll < numRoll; roll++) 
+    {
         hyp[0] = seed[0] + minDeviation[0] + stepSizes[0]*roll;
-        for (unsigned int pitch = 0; pitch < numPitch; pitch++) {
+        for (unsigned int pitch = 0; pitch < numPitch; pitch++)
+        {
             hyp[1] = seed[1] + minDeviation[1] + stepSizes[1]*pitch;
-            for (unsigned int yaw = 0; yaw < numYaw; yaw++) {
+            for (unsigned int yaw = 0; yaw < numYaw; yaw++)
+            {
                 hyp[2] = seed[2] + minDeviation[2] + stepSizes[2]*yaw;
-                for (unsigned int x = 0; x < numX; x++) {
+                for (unsigned int x = 0; x < numX; x++)
+                {
                     hyp[3] = seed[3] + minDeviation[3] + stepSizes[3]*x;
-                    for (unsigned int y = 0; y < numY; y++) {
+                    for (unsigned int y = 0; y < numY; y++)
+                    {
                         hyp[4] = seed[4] + minDeviation[4] + stepSizes[4]*y;
-                        for (unsigned int z = 0; z < numZ; z++) {
+                        for (unsigned int z = 0; z < numZ; z++)
+                        {
                             hyp[5] = seed[5] + minDeviation[5] + stepSizes[5]*z;
                             
                             // save each hypothesis to the hypotheses list
@@ -129,47 +137,51 @@ std::vector<double> calculateEvidence(uint8_t* lookupTable,
                                       std::vector<double> maxXYZ, unsigned int* numXYZ,
                                       double pointsPerMeter)
 {
-    std::vector<double> hypEvidence;
-    int evidence;
+    std::vector<double> hypEvidence(hypotheses.rows());
 
     // calculate the evidence for each hypothesis
-    for (unsigned int i = 0; i < hypotheses.rows(); i++)
-    {    
-        // transform the pointcloud measurements to the lookup frame
-        Eigen::Matrix4d sensorToModel = homogeneous(hypotheses(i,0),
-                                                    hypotheses(i,1),
-                                                    hypotheses(i,2),
-                                                    hypotheses(i,3),
-                                                    hypotheses(i,4),
-                                                    hypotheses(i,5));
-        Eigen::MatrixXd pointcloudLookup = (lookupToModel*sensorToModel.inverse())
-                                            * pointCloud.transpose(); 
-        
-        // initialise the evidence to zero
-        evidence = 0;
+    tbb::parallel_for(
+    tbb::blocked_range<int>(0, hypotheses.rows()),
+    [&](tbb::blocked_range<int> r)
+    {
+        for (unsigned int i = r.begin(); i < r.end(); i++)
+        {    
+            // transform the pointcloud measurements to the lookup frame
+            Eigen::Matrix4d sensorToModel = homogeneous(hypotheses(i,0),
+                                                        hypotheses(i,1),
+                                                        hypotheses(i,2),
+                                                        hypotheses(i,3),
+                                                        hypotheses(i,4),
+                                                        hypotheses(i,5));
+            Eigen::MatrixXd pointcloudLookup = (lookupToModel*sensorToModel.inverse())
+                                                * pointCloud.transpose(); 
+            
+            // initialise the evidence to zero
+            int evidence = 0;
 
-        // iterate through the sensor measurements and sum the evidence
-        for (unsigned int k = 0; k < pointCloud.rows(); k++)
-        {
-            // compute the lookup table indicies
-            double x = pointcloudLookup(0,k);
-            double y = pointcloudLookup(1,k);
-            double z = pointcloudLookup(2,k);
-
-            if (x >= 0 && x <= maxXYZ[0] &&
-                y >= 0 && y <= maxXYZ[1] &&
-                z >= 0 && z <= maxXYZ[2])
+            // iterate through the sensor measurements and sum the evidence
+            for (unsigned int k = 0; k < pointCloud.rows(); k++)
             {
-                int xIndex = round(x*pointsPerMeter);
-                int yIndex = round(y*pointsPerMeter);
-                int zIndex = round(z*pointsPerMeter);
-                unsigned int index = zIndex + yIndex*numXYZ[2] +
-                                     xIndex*numXYZ[1]*numXYZ[2]; 
-                evidence += lookupTable[index];
+                // compute the lookup table indicies
+                double x = pointcloudLookup(0,k);
+                double y = pointcloudLookup(1,k);
+                double z = pointcloudLookup(2,k);
+
+                if (x >= 0 && x <= maxXYZ[0] &&
+                    y >= 0 && y <= maxXYZ[1] &&
+                    z >= 0 && z <= maxXYZ[2])
+                {
+                    int xIndex = round(x*pointsPerMeter);
+                    int yIndex = round(y*pointsPerMeter);
+                    int zIndex = round(z*pointsPerMeter);
+                    unsigned int index = zIndex + yIndex*numXYZ[2] +
+                                        xIndex*numXYZ[1]*numXYZ[2]; 
+                    evidence += lookupTable[index];
+                }
             }
+            hypEvidence[i] = evidence;
         }
-        hypEvidence.push_back(evidence);
-    }
+    });
     return hypEvidence;
 }
 
@@ -210,7 +222,9 @@ int parseArgsRaycast(raycastParams* config, int argc, char* argv[])
                 input.push_back(std::stod(substr));
             }
             if (input.size() != 6) // need all six parameters
+            {
                 return 1;
+            }
             config->sensorToModel = homogeneous(input[0]*M_PI/180,
                                                 input[1]*M_PI/180,
                                                 input[2]*M_PI/180,
@@ -226,7 +240,9 @@ int parseArgsRaycast(raycastParams* config, int argc, char* argv[])
                 config->phiRange.push_back(std::stod(substr));
             }
             if (config->phiRange.size() != 3) // need all three parameters
+            {
                 return 1;
+            }
         }
         if (strcmp(argv[i],"--elevationRange") == 0)
         {
@@ -238,7 +254,9 @@ int parseArgsRaycast(raycastParams* config, int argc, char* argv[])
                 config->thetaRange.push_back(std::stod(substr));
             }
             if (config->thetaRange.size() != 3) // need all three parameters
+            {
                 return 1;
+            }
         }
     }
     return 0;
@@ -282,7 +300,9 @@ int parseArgsLookupTable(lookupTableParams* config, int argc, char* argv[])
                 input.push_back(std::stod(substr));
             }
             if (input.size() != 6) // need all six parameters
+            {
                 return 1;
+            }
             config->lookupToModel = homogeneous(input[0]*M_PI/180,
                                                 input[1]*M_PI/180,
                                                 input[2]*M_PI/180,
@@ -298,7 +318,9 @@ int parseArgsLookupTable(lookupTableParams* config, int argc, char* argv[])
                 config->maxXYZ.push_back(std::stod(substr));
             }
             if (config->maxXYZ.size() != 3) // need all six parameters
-                return 1;  
+            {
+                return 1;
+            }  
         }
         if (strcmp(argv[i],"--stepSize") == 0)
         {
@@ -327,20 +349,20 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
     while (std::getline(configFile,newLine))
     {
 
-    std::stringstream str(newLine);
+        std::stringstream str(newLine);
 
-    std::vector<std::string> paramsFromFile;
-    while (str.good())
-    {
-        std::string substr;
-        getline(str,substr,':');
-        auto noSpaces = std::remove(substr.begin(), substr.end(), ' ');
-        substr.erase(noSpaces,substr.end());
+        std::vector<std::string> paramsFromFile;
+        while (str.good())
+        {
+            std::string substr;
+            getline(str,substr,':');
+            auto noSpaces = std::remove(substr.begin(), substr.end(), ' ');
+            substr.erase(noSpaces,substr.end());
 
-        // std::cout << substr << std::endl;
-        paramsFromFile.push_back(substr);
-    }
-    paramsAll.push_back(paramsFromFile);
+            // std::cout << substr << std::endl;
+            paramsFromFile.push_back(substr);
+        }
+        paramsAll.push_back(paramsFromFile);
     }
 
     if (paramsAll.size() != 13) exit(1);
@@ -351,11 +373,14 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
         std::string paramsName = paramsAll[i][0];
 
         if (paramsName.compare("pointCloudFile") == 0)
+        {
             config->pointCloudFile = paramsAll[i][1]; 
+        }
 
         if (paramsName.compare("LOOKUP_TABLE_lookupTableFile") == 0)
+        {
             config->lookupTableFile = paramsAll[i][1];
-
+        }
         if (paramsName.compare("LOOKUP_TABLE_lookupToModel") == 0)
         {
             std::stringstream str(paramsAll[i][1]);
@@ -367,7 +392,9 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 input.push_back(std::stod(substr));
             }
             if (input.size() != 6) // need all six parameters
+            {
                 return 1;
+            }
             config->lookupToModel = homogeneous(input[0]*M_PI/180,
                                                 input[1]*M_PI/180,
                                                 input[2]*M_PI/180,
@@ -384,11 +411,15 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 config->maxXYZ.push_back(std::stod(substr));
             }
             if (config->maxXYZ.size() != 3) // need all six parameters
-                return 1; 
+            {
+                return 1;
+            } 
         }
 
         if (paramsName.compare("LOOKUP_TABLE_stepSize") == 0)
+        {
             config->stepSize = std::stod(paramsAll[i][1]);
+        }
 
         if (paramsName.compare("SEARCH_HEURISTIC_seed") == 0)
         {
@@ -403,7 +434,9 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 counter++;
             }
             if (counter != 6) // need all six parameters
+            {
                 return 1;
+            }
 
             config->seed(0) = config->seed(0) * M_PI/180;  
             config->seed(1) = config->seed(1) * M_PI/180;  
@@ -423,7 +456,9 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 counter++;
             }
             if (counter != 6) // need all six parameters
-                return 1;  
+            {
+                return 1;
+            }  
             
             config->minDeviation(0) = config->minDeviation(0) * M_PI/180;  
             config->minDeviation(1) = config->minDeviation(1) * M_PI/180;  
@@ -443,7 +478,9 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 counter++;
             }
             if (counter != 6) // need all six parameters
+            {
                 return 1;
+            }
 
             config->maxDeviation(0) = config->maxDeviation(0) * M_PI/180;  
             config->maxDeviation(1) = config->maxDeviation(1) * M_PI/180;  
@@ -464,23 +501,30 @@ int parseArgsPlum(plumParams* config, int argc, char* argv[])
                 counter++;
             }
             if (counter != 6) // need all six parameters
+            {
                 return 1;
+            }
             config->stepSizes(0) = config->stepSizes(0) * M_PI/180;  
             config->stepSizes(1) = config->stepSizes(1) * M_PI/180;  
             config->stepSizes(2) = config->stepSizes(2) * M_PI/180; 
         }
 
         if (paramsName.compare("SEARCH_HEURISTIC_rotSigma") == 0)
+        {
             config->rotSigma = std::stod(paramsAll[i][1]);
-
+        }
         if (paramsName.compare("SEARCH_HEURISTIC_transSigma") == 0)
+        {
             config->transSigma = std::stod(paramsAll[i][1]);
-        
+        }
         if (paramsName.compare("SEARCH_HEURISTIC_noIterations") == 0)
+        {
             config->noIterations = std::stoi(paramsAll[i][1]);
-        
+        }
         if (paramsName.compare("SEARCH_HEURISTIC_resampleSize") == 0)
+        {
             config->resampleSize = std::stoi(paramsAll[i][1]);
+        }
     }
     return 0;
 }

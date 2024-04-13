@@ -6,7 +6,7 @@ LOOKUP_TABLE_stepSize           : 1
 SEARCH_HEURISTIC_seed           : 0,0,20,25,15,-10
 SEARCH_HEURISTIC_minDeviation   : -180,-180,-180,-10,-10,-10 
 SEARCH_HEURISTIC_maxDeviation   : 180,180,180,10,10,10
-SEARCH_HEURISTIC_stepSizes      : 60,60,60,2,2,2
+SEARCH_HEURISTIC_stepSizes      : 90,90,90,5,5,5
 SEARCH_HEURISTIC_rotSigma       : 0.05
 SEARCH_HEURISTIC_transSigma     : 3
 SEARCH_HEURISTIC_noIterations   : 40

@@ -14,7 +14,7 @@ Author: Vedant Bhandari
 Last modified: 16/07/2023
 */
 
-#include "helper.h"
+#include "utils.hpp"
 
 // Use the open3d library to perform the raycasting operations.
 #include "open3d/Open3D.h"

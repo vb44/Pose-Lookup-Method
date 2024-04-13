@@ -15,7 +15,7 @@ Author: Vedant Bhandari
 Last modified: 16/07/2023
 */
 
-#include "helper.h"
+#include "utils.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -78,11 +78,13 @@ int main(int argc, char* argv[])
     
     // Begin the search heuristic.
     double normalisingConstant = 0.0;
-    for (unsigned int i = 0; i < numberOfHypotheses; i++) {
+    for (unsigned int i = 0; i < numberOfHypotheses; i++)
+    {
           normalisingConstant += pow(evidence[i], iteration);
     }
 
-    if (isinf(normalisingConstant)) {
+    if (isinf(normalisingConstant))
+    {
       std::cout << "Normalising constant has reached infinity!" << std::endl;
       exit(1);
     }
@@ -127,14 +129,17 @@ int main(int argc, char* argv[])
 
     // i (hypothesis index), j (where in the previous set we are perturbing from), k (used to add noise)
     unsigned int i, j, k;
-    for (i = 0; i < params.resampleSize; i++) {
+    for (i = 0; i < params.resampleSize; i++)
+    {
 
         // Uniformly sample.
         double pxSampleLevel = (i+0.5) * (1.0 / (double)(params.resampleSize));
 
         // Find the first hypothesis where the cumProb (cumulative probability) is above the sample level.
         for (j = 0; j < (numberOfHypotheses-1); j++)
+        {
             if (cumProb[j] >= pxSampleLevel) break;
+        }
 
         // Add some noise to hypothesis j and put it in the list.
         noiseVector[0] = (*randRot)();
@@ -144,7 +149,9 @@ int main(int argc, char* argv[])
         noiseVector[4] = (*randTrans)();
         noiseVector[5] = (*randTrans)();
         for (k = 0; k < 6; k++)
-            hypothesesSampled(i,k) = hypotheses(j,k) + noiseVector[k];
+        {
+          hypothesesSampled(i,k) = hypotheses(j,k) + noiseVector[k];
+        }
     }
 
     if (iteration == 1)
@@ -154,7 +161,7 @@ int main(int argc, char* argv[])
     }
 
     // Save the best evidence.
-      hypothesesSampled.row(params.resampleSize-1) = hypotheses.row(maxElementIndex);
+    hypothesesSampled.row(params.resampleSize-1) = hypotheses.row(maxElementIndex);
 
     if (iteration != params.noIterations)
     {

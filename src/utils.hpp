@@ -15,6 +15,7 @@
 #include <boost/random.hpp>
 #include <boost/math/distributions/normal.hpp>
 #include <Eigen/Dense>
+#include <tbb/parallel_for.h>
 
 /**
  * @brief A container to store all the raycast settings.

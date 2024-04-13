@@ -4,17 +4,19 @@ project(PLuM LANGUAGES C CXX)
 
 add_compile_options(-std=c++17 -O3)
 
-# add an executable called plum
-add_executable(plum plum.cpp helper.cpp)
-
 find_package(Open3D REQUIRED)
+find_package(TBB REQUIRED) 
 
-# add an executable called generateLookup
+# Add an executable called plum.
+add_executable(plum plum.cpp utils.cpp)
+target_link_libraries(plum TBB::tbb)
+
+# Add an executable called generateLookup.
 add_executable(generateLookup)
-target_sources(generateLookup PRIVATE generateLookupTable.cpp helper.cpp)
+target_sources(generateLookup PRIVATE generateLookupTable.cpp utils.cpp)
 target_link_libraries(generateLookup PRIVATE Open3D::Open3D)
 
-# add an executable called raycastModel
+# Add an executable called raycastModel.
 add_executable(raycastModel)
-target_sources(raycastModel PRIVATE raycastModel.cpp helper.cpp)
+target_sources(raycastModel PRIVATE raycastModel.cpp utils.cpp)
 target_link_libraries(raycastModel PRIVATE Open3D::Open3D)
