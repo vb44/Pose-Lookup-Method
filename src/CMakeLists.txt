@@ -14,9 +14,11 @@ target_link_libraries(plum TBB::tbb)
 # Add an executable called generateLookup.
 add_executable(generateLookup)
 target_sources(generateLookup PRIVATE generateLookupTable.cpp utils.cpp)
-target_link_libraries(generateLookup PRIVATE Open3D::Open3D)
+target_link_libraries(generateLookup TBB::tbb)
+target_link_libraries(generateLookup Open3D::Open3D)
 
 # Add an executable called raycastModel.
 add_executable(raycastModel)
 target_sources(raycastModel PRIVATE raycastModel.cpp utils.cpp)
-target_link_libraries(raycastModel PRIVATE Open3D::Open3D)
+target_link_libraries(raycastModel TBB::tbb)
+target_link_libraries(raycastModel Open3D::Open3D)
