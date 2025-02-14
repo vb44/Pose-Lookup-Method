@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef POINTCLOUD_H
-#define POINTCLOUD_H
+#ifndef POINTCLOUD_HPP
+#define POINTCLOUD_HPP
 
 #include <fstream>
 #include <set>
@@ -86,4 +86,4 @@ class PointCloud
                         double subsampleRadius);
 };
 
-#endif
+#endif // POINTCLOUD_HPP

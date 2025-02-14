@@ -44,7 +44,7 @@ void Plum::setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud)
     );
 }
 
-std::vector<double> Plum::calculateEvidence(const Eigen::MatrixXd &hypotheses)
+std::vector<int> Plum::calculateEvidence(const Eigen::MatrixXd &hypotheses)
 {
     evidences_.resize(hypotheses.rows());
 

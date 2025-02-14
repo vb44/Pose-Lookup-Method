@@ -27,13 +27,13 @@ namespace utils {
 
     std::vector<double> hom2rpyxyz(const Eigen::Matrix4d &T)
     {
-        double ROLL = atan2(T(2,1), T(2,2));
-        double PITCH = asin(-T(2,0));
-        double YAW = atan2(T(1,0), T(0,0));
-        double X = T(0,3);
-        double Y = T(1,3);
-        double Z = T(2,3);
-        std::vector<double> result = {ROLL, PITCH, YAW, X, Y, Z};
+        double roll = atan2(T(2,1), T(2,2));
+        double pitch = asin(-T(2,0));
+        double yaw = atan2(T(1,0), T(0,0));
+        double x = T(0,3);
+        double y = T(1,3);
+        double z = T(2,3);
+        std::vector<double> result = {roll, pitch, yaw, x, y, z};
         return result;
     }
 

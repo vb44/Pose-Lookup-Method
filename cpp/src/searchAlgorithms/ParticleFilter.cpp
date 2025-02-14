@@ -63,7 +63,7 @@ void ParticleFilter::generateHypotheses()
 std::vector<double> ParticleFilter::findBestGeometryPose()
 {
 
-    std::vector<double> evidences;
+    std::vector<int> evidences;
     generateHypotheses();
     int resampleSize = resampleSize_;
     
@@ -88,46 +88,45 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
                 }
             }
         );
-
+        
         // Begin the search heuristic.
-        double normalisingConstant = 0.0;
+        double normConstant = 0.0;
         for (unsigned int i = 0; i < numberOfHypotheses_; i++)
         {
-                normalisingConstant += pow(evidences[i], iteration);
+                normConstant += pow(evidences[i], iteration);
         }
 
-        if (isinf(normalisingConstant))
+        if (isinf(normConstant))
         {
-            std::cout << "Plum: Normalising constant has reached infinity!" << std::endl;
+            std::cout << "pose_estimator: Normalising constant is infinite!" << std::endl;
             exit(1);
         }
 
         double total = 0;
-        std::vector<double> exageratedHypothesisProb(numberOfHypotheses_); 
-        std::vector<double> cumProb(numberOfHypotheses_); 
+        std::vector<double> hypProb(numberOfHypotheses_); // hypothesis probability
+        std::vector<double> cumProb(numberOfHypotheses_); // cumulative probability
         for (unsigned int i = 0; i < numberOfHypotheses_; i++)
         {
-            exageratedHypothesisProb[i] = (pow(evidences[i], iteration) /
-                                           normalisingConstant);
-            total += exageratedHypothesisProb[i];
+            hypProb[i] = (pow(evidences[i], iteration) /
+                            normConstant);
+            total += hypProb[i];
             cumProb[i] = total;
         }
 
         // Random number generation.
+        // Set the seed for reproducible results.
         if (randRot_) { delete randRot_; }
         if (randTrans_) { delete randTrans_; }
-
-        // Set the seed for reproducible results.
         static boost::mt19937 seed(0);
 
-        // Scale the noise down per iteration.
+        // Scale the particle noise down per iteration to allow for a
+        // focused search.
         double scale = 1.0 / ((double)iteration);
 
         boost::normal_distribution<double> rotationalDistribution(
-            0.0, rotSigma_ * scale);
+                                            0.0, rotSigma_ * scale);
         boost::normal_distribution<double> translationalDistribution(
-            0.0, transSigma_ * scale);
-
+                                            0.0, transSigma_ * scale);
         randRot_ = new boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> >(seed, rotationalDistribution);
         randTrans_ = new boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> >(seed, translationalDistribution);
 
@@ -139,27 +138,26 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
 
         std::vector<double> noiseVector(6, 0.0);
 
-        // Overwrite the best element index.
+        // Overwrite the highest rewarding element.
         int maxElement = *std::max_element(&evidences[0],
                                            &evidences[0]+numberOfHypotheses_);
         int maxElementIndex = std::find(&evidences[0],
-                                        &evidences[0]+numberOfHypotheses_, maxElement) - &evidences[0]; 
+                                        &evidences[0]+numberOfHypotheses_,
+                                        maxElement) - &evidences[0]; 
 
-        // i (hypothesis index), j (where in the previous set we are perturbing from), k (used to add noise)
-        unsigned int i, j, k;
+        // Resample the hypotheses using the cumulative distribution
+        // and the noise generators.
+        int i, j, k;
         for (i = 0; i < resampleSize; i++)
         {
-
-            // Uniformly sample.
             double pxSampleLevel = (i+0.5) * (1.0 / (double)(resampleSize));
 
-            // Find the first hypothesis where the cumProb (cumulative probability) is above the sample level.
             for (j = 0; j < (numberOfHypotheses_-1); j++)
             {
                 if (cumProb[j] >= pxSampleLevel) break;
             }
 
-            // Add some noise to hypothesis j and put it in the list.
+            // Add noise to the hypothesis.
             noiseVector[0] = (*randRot_)();
             noiseVector[1] = (*randRot_)();
             noiseVector[2] = (*randRot_)();
@@ -201,5 +199,5 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
             hypotheses_(maxElementIndex, 3),
             hypotheses_(maxElementIndex, 4),
             hypotheses_(maxElementIndex, 5),
-            evidences[maxElementIndex]};
+            double(evidences[maxElementIndex])};
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef PARTICLE_FILTER_H
-#define PARTICLE_FILTER_
+#ifndef PARTICLE_FILTER_HPP
+#define PARTICLE_FILTER_HPP
 
 #include <fstream>
 #include <functional>
@@ -32,7 +32,6 @@ class ParticleFilter
 
         std::vector<double> findBestGeometryPose();
 
-
     private:
         unsigned int numberOfHypotheses_;
         Eigen::MatrixXd hypotheses_;
@@ -58,4 +57,4 @@ class ParticleFilter
         void generateHypotheses();
 };
 
-#endif // PARTICLE_FILTER_H
+#endif // PARTICLE_FILTER_HPP

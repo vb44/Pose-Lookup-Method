@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
@@ -9,7 +12,6 @@
 #include "tbb/parallel_for.h"
 
 #include "ConfigParser.hpp"
-
 
 namespace utils {
 
@@ -54,3 +56,5 @@ namespace utils {
     void printProgress(double percentage);
 
 } // namespace utils
+
+#endif // UTILS_HPP

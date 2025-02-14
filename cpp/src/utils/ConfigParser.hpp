@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef CONFIG_PARSER_HPP
+#define CONFIG_PARSER_HPP
+
 #include <iostream>
 #include <string>
 
@@ -34,7 +37,13 @@ class ConfigParser
          */
         int parseConfig();
 
+        /**
+         * @brief Get the path to the point cloud folder.
+         * 
+         * @return const std::string Path to the point cloud folder. 
+         */
         const std::string getPcPath() const;
+        
         const double getMaxSensorRange() const;
         const double getMinSensorRange() const;
         const double getPcSubsampleRadius() const;
@@ -43,6 +52,9 @@ class ConfigParser
         const std::string getLookupTableFile() const;
         const std::vector<double> getLookupTableToModel() const;
         const std::vector<double> getLookupTableMaxXyz() const;
+
+        const double getSigma() const;
+        const std::string getModelFilePath() const;
         
         const double getSearchRotSigma() const;
         const double getSearchTransSigma() const;
@@ -53,9 +65,14 @@ class ConfigParser
         const std::vector<double> getSearchMaxDev() const;
         const std::vector<double> getSearchStepSizes() const;
 
+        const std::string getPoseEstMethod() const;
+
     private:
         // The expected number of commandline arguments.
         static constexpr int EXPECTED_ARGUMENT_COUNT = 2;
+
+        // Pose estimation method
+        std::string poseEstMethod_;
 
         // Point cloud file
         std::string pointCloudPath_;
@@ -63,12 +80,16 @@ class ConfigParser
         double sesnorMinRange_;
         double pcSubsampleRadius_;
 
-        // Lookup table parameters
+        // PLuM: Lookup table parameters
         // TODO: Read these from the lookup details file.
         double lookupTableStepSize_;
         std::string lookupTableFile_;
         std::vector<double> lookupTableToModel_;
         std::vector<double> lookupTableMaxXyz_;
+
+        // MSoE: Model file path and measurment uncertainty
+        double sigma_;
+        std::string modelFilePath_;
 
         // Search heuristic performance
         double searchRotSigma_;
@@ -83,3 +104,5 @@ class ConfigParser
         // Path to the algorithm configuration file.
         std::string yamlFilePath_;
 };
+
+#endif // CONFIG_PARSER_HPP

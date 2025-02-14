@@ -1,4 +1,6 @@
 ---
+method: plum
+
 # Point cloud folder path
 pointCloudFolder: ../../sample_data/point_clouds/
 sensorMaxRange: 100

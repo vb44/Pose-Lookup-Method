@@ -4,7 +4,7 @@ ConfigParser::ConfigParser(int argc, char** argv)
 {
     if (argc != EXPECTED_ARGUMENT_COUNT)
     {
-        std::cerr << "Usage: ./simple config_file.yaml" << std::endl;
+        std::cerr << "Usage: ./plum config_file.yaml" << std::endl;
         exit(EXIT_FAILURE);
     }
     yamlFilePath_ = argv[1];
@@ -15,17 +15,30 @@ int ConfigParser::parseConfig()
     try {
         YAML::Node configFromYaml = YAML::LoadFile(yamlFilePath_);
 
+        // Check the pose estimation method being used.
+        poseEstMethod_ = configFromYaml["method"].as<std::string>();
+
+        if (!poseEstMethod_.compare("plum"))
+        {
+            // Lookup table
+            lookupTableStepSize_ = configFromYaml["lookupTableStepSize"].as<double>();
+            lookupTableFile_ = configFromYaml["lookupTableFile"].as<std::string>();
+            lookupTableToModel_ = configFromYaml["lookupTableToModel"].as<std::vector<double>>();
+            lookupTableMaxXyz_ = configFromYaml["lookupTableMaxXyz"].as<std::vector<double>>();
+        } else if (!poseEstMethod_.compare("msoe"))
+        {
+            sigma_ = configFromYaml["sigma"].as<double>();
+            modelFilePath_ = configFromYaml["modelFilePath"].as<std::string>();
+        } else
+        {
+            std::cerr << "./plum: The parmater \"method\" must be \"plum\" or \"msoe\"" << std::endl;
+            exit(EXIT_FAILURE);
+        }
         // Point cloud
         pointCloudPath_= configFromYaml["pointCloudFolder"].as<std::string>();
         sesnorMinRange_ = configFromYaml["sensorMinRange"].as<double>();
         sensorMaxRange_ = configFromYaml["sensorMaxRange"].as<double>();
         pcSubsampleRadius_ = configFromYaml["subsampleRadius"].as<double>();
-
-        // Lookup table
-        lookupTableStepSize_ = configFromYaml["lookupTableStepSize"].as<double>();
-        lookupTableFile_ = configFromYaml["lookupTableFile"].as<std::string>();
-        lookupTableToModel_ = configFromYaml["lookupTableToModel"].as<std::vector<double>>();
-        lookupTableMaxXyz_ = configFromYaml["lookupTableMaxXyz"].as<std::vector<double>>();
 
         // Search heuristic performance
         searchRotSigma_ = configFromYaml["searchRotSigma"].as<double>();
@@ -125,4 +138,19 @@ const std::vector<double> ConfigParser::getSearchMaxDev() const
 const std::vector<double> ConfigParser::getSearchStepSizes() const
 {
     return searchStepSizes_;
+}
+
+const double ConfigParser::getSigma() const
+{
+    return sigma_;
+}
+
+const std::string ConfigParser::getModelFilePath() const
+{
+    return modelFilePath_;
+}
+
+const std::string ConfigParser::getPoseEstMethod() const
+{
+    return poseEstMethod_;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef PLUM_H
-#define PLUM_H
+#ifndef PLUM_HPP
+#define PLUM_HPP
 
 #include <fstream>
 #include <iostream>
@@ -26,7 +26,7 @@ class Plum : public ObjectiveFunction
 
         ~Plum();
 
-        std::vector<double> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
+        std::vector<int> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
 
         void setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud) override;
 
@@ -64,7 +64,7 @@ class Plum : public ObjectiveFunction
 
         LookupTable lookupTable_;
         Eigen::MatrixXd pointCloud_; // nx4 matrix ready for homogeneous transforms
-        std::vector<double> evidences_;
+        std::vector<int> evidences_;
 };
 
-#endif // PLUM_H
+#endif // PLUM_HPP

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "ConfigParser.hpp"
+#include "Msoe.hpp"
 #include "ParticleFilter.hpp"
 #include "Plum.hpp"
 #include "PointCloud.hpp"
@@ -36,17 +37,24 @@ int main(int argc, char* argv[])
     auto startReg = std::chrono::high_resolution_clock::now();
 
     PointCloud pointCloud(config);
-    // Plum plum(config);
-    std::shared_ptr<ObjectiveFunction> objFunc = std::make_shared<Plum>(config);
+    std::shared_ptr<ObjectiveFunction> objFunc;
+
+    // Instantiate the configured objective function.
+    std::string poseEstMethod = config.getPoseEstMethod();
+    if (!poseEstMethod.compare("plum"))
+    {
+        objFunc = std::make_shared<Plum>(config);
+    } else if (!poseEstMethod.compare("msoe"))
+    {
+        objFunc = std::make_shared<Msoe>(config);
+    }
     ParticleFilter partilceFilter(config, objFunc);
 
     // Loop over all input scans, solve and save the registration estimate.
     for (unsigned int scanNum = 0; scanNum < numScans; scanNum++)
-    // unsigned int scanNum = 179;
     {
         auto start = std::chrono::high_resolution_clock::now(); 
         pointCloud.readScan(scanFiles[scanNum]);
-        // std::cout << scanFiles[scanNum] << " " << pointCloud.getPtCloud().size() << std::endl;
 
         // TODO: Add a platform the sensor config
 
