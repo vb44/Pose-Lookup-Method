@@ -1,0 +1,22 @@
+---
+# Point cloud folder path
+pointCloudFolder: ../../sample_data/point_clouds/
+sensorMaxRange: 100
+sensorMinRange: -1
+subsampleRadius: 0
+
+# Lookup table parameters
+lookupTableStepSize: 1
+lookupTableFile: ../../sample_data/bunny_lookupTable
+lookupTableToModel: [0.0,0.0,0.0,50.0,40.0,10.0] # (rad,rad,rad,m,m,m)
+lookupTableMaxXyz: [100,100,100]
+
+# Search heuristic performance
+searchRotSigma: 0.05 # rad
+searchTransSigma: 3 # m
+searchNoIterations: 40
+searchResampleSize: 1000
+searchSeed: [0,0,0.3491,25,15,-10] # (rad,rad,rad,m,m,m)
+searchMinDev: [-3.1416,-3.1416,-3.1416,-40,-30,-10] # (rad,rad,rad,m,m,m)
+searchMaxDev: [3.1416,3.1416,3.1416,40,30,10] # (rad,rad,rad,m,m,m)
+searchStepSizes: [1.5708,1.5708,1.5708,5,5,5] # (rad,rad,rad,m,m,m)
