@@ -95,6 +95,8 @@ class Raycaster
         std::vector<Eigen::Vector3f> hits_;
         std::vector<int> hitsValid_;
 
+        std::vector<double> platformToSensor_;
+
         // Transform the geometry at the current pose.
         void transformGeometry();
 };

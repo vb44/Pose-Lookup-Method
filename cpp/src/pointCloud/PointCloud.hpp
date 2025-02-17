@@ -46,7 +46,7 @@ class PointCloud
          * 
          * @return const std::vector<Eigen::Vector4d>& The point cloud.
          */
-        const std::vector<Eigen::Vector4d> &getPtCloud() const;
+        std::vector<Eigen::Vector4d> &getPtCloud();
 
     private:
         static constexpr int NUM_COLUMNS_BIN = 4;
@@ -66,6 +66,10 @@ class PointCloud
         // Container to store the point cloud.
         std::vector<Eigen::Vector4d> ptCloud_;
 
+        Eigen::Matrix4d platformToSensor_;
+        
+        std::vector<double> pcRegionOfInterest_;
+
         // Container for a nanoflann-friendly point cloud.
         NanoflannPointsContainer<double> pcForKdTree_;
 
@@ -74,16 +78,20 @@ class PointCloud
          * 
          * @param pts The points to convert to a nanoflann-friendly container.
          */
-        void convertToPointCloudKdTree_(const std::vector<Eigen::Vector4d> &pts);
+        void convertToPointCloudKdTree(const std::vector<Eigen::Vector4d> &pts);
 
-         /**
+        /**
          * @brief Radially subsample the point cloud.
          * 
          * @param pts The points to subsample.
          * @param subsampleRadius The subsample radius in meters.
          */
-        void subsample_(std::vector<Eigen::Vector4d> &pts,
+        void subsample(std::vector<Eigen::Vector4d> &pts,
                         double subsampleRadius);
+
+        void transformToPlatformFrame();
+        void getRegionOfInterest();
+        void printPtCloud();
 };
 
 #endif // POINTCLOUD_HPP

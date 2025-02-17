@@ -1,7 +1,8 @@
 #include "Msoe.hpp"
 
 Msoe::Msoe(const ConfigParser &config) :
-    sigma_(config.getSigma())
+    sigma_(config.getSigma()),
+    platformToSensor_(config.getPlatformToSensor())
 {
     std::cout << config.getModelFilePath() << std::endl;
     raycaster = new Raycaster(config.getModelFilePath());
@@ -11,15 +12,24 @@ Msoe::~Msoe()
 {
 }
 
-void Msoe::setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud)
+void Msoe::setPointCloud(std::vector<Eigen::Vector4d> &pointCloud)
 {
     pointCloud_.resize(pointCloud.size(), 4);
+
+    // The raycasting is performed in the sensor frame.
+    sensorToPlatform_ = utils::homogeneous(platformToSensor_[0],
+                                           platformToSensor_[1],
+                                           platformToSensor_[2],
+                                           platformToSensor_[3],
+                                           platformToSensor_[4],
+                                           platformToSensor_[5]).inverse();
     tbb::parallel_for(
         tbb::blocked_range<int>(0, pointCloud.size()),
         [&](tbb::blocked_range<int> r)
         {
             for (unsigned int i = r.begin(); i < r.end(); i++)
-            {    
+            {
+                pointCloud[i] = sensorToPlatform_ * pointCloud[i];
                 pointCloud_.row(i) << pointCloud[i](0),
                                       pointCloud[i](1),
                                       pointCloud[i](2),
@@ -35,20 +45,20 @@ std::vector<int> Msoe::calculateEvidence(const Eigen::MatrixXd &hypotheses)
 {
     evidences_.resize(hypotheses.rows());
     std::vector<double> measuredRanges = raycaster->getMeasuredRanges();
+
     std::cout << "Number of hypotheses: " << hypotheses.rows() << std::endl;
 
     // Calculate the evidence for each hypothesis.
     for (unsigned int i = 0; i < hypotheses.rows(); i++)
     {    
         // Transform the pointcloud measurements to the lookup frame.
-        Eigen::Matrix4f sensorToModel = (utils::homogeneous(
+        Eigen::Matrix4f sensorToModel = (sensorToPlatform_* utils::homogeneous(
                                             hypotheses(i,0),
                                             hypotheses(i,1),
                                             hypotheses(i,2),
                                             hypotheses(i,3),
                                             hypotheses(i,4),
-                                            hypotheses(i,5))).cast<float>();
-
+                                            hypotheses(i,5))).cast<float>();       
         // Raycast the scene.
         raycaster->setGeometryPose(sensorToModel);
         raycaster->raycast();
@@ -74,11 +84,16 @@ std::vector<int> Msoe::calculateEvidence(const Eigen::MatrixXd &hypotheses)
                     raycastResult.first[j].y()*raycastResult.first[j].y() +
                     raycastResult.first[j].z()*raycastResult.first[j].z());
                 evidence += std::exp(-std::pow(raycastNorm-measuredRanges[j],2)/(2*std::pow(sigma_,2)));
-            }
+            } 
         }
-        
         // Relative reward - scale by 100 to use integers.
         evidences_[i] = int(evidence*100);
+        // std::cout << i << " " << evidence << " " << hypotheses(i,0) << " "
+        //                                     << hypotheses(i,1) << " "
+        //                                     << hypotheses(i,2) << " "
+        //                                     << hypotheses(i,3) << " "
+        //                                     << hypotheses(i,4) << " "
+        //                                     << hypotheses(i,5) <<  std::endl;
     }
     return evidences_;   
 }

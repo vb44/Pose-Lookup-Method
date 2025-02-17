@@ -39,6 +39,8 @@ int ConfigParser::parseConfig()
         sesnorMinRange_ = configFromYaml["sensorMinRange"].as<double>();
         sensorMaxRange_ = configFromYaml["sensorMaxRange"].as<double>();
         pcSubsampleRadius_ = configFromYaml["subsampleRadius"].as<double>();
+        platformToSensor_ = configFromYaml["platformToSensor"].as<std::vector<double>>();
+        pcRegionOfInterest_ = configFromYaml["pcRegionOfInterest"].as<std::vector<double>>();
 
         // Search heuristic performance
         searchRotSigma_ = configFromYaml["searchRotSigma"].as<double>();
@@ -153,4 +155,14 @@ const std::string ConfigParser::getModelFilePath() const
 const std::string ConfigParser::getPoseEstMethod() const
 {
     return poseEstMethod_;
+}
+
+const std::vector<double> ConfigParser::getPlatformToSensor() const
+{
+    return platformToSensor_;
+}
+
+const std::vector<double> ConfigParser::getPcRegionOfInterest() const
+{
+    return pcRegionOfInterest_;
 }

@@ -47,6 +47,8 @@ class ConfigParser
         const double getMaxSensorRange() const;
         const double getMinSensorRange() const;
         const double getPcSubsampleRadius() const;
+        const std::vector<double> getPlatformToSensor() const;
+        const std::vector<double> getPcRegionOfInterest() const;
         
         const double getLookupTableStepSize() const;
         const std::string getLookupTableFile() const;
@@ -79,6 +81,8 @@ class ConfigParser
         double sensorMaxRange_;
         double sesnorMinRange_;
         double pcSubsampleRadius_;
+        std::vector<double> platformToSensor_;
+        std::vector<double> pcRegionOfInterest_;
 
         // PLuM: Lookup table parameters
         // TODO: Read these from the lookup details file.

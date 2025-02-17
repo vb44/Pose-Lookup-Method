@@ -26,7 +26,7 @@ Plum::~Plum()
     }
 }
 
-void Plum::setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud)
+void Plum::setPointCloud(std::vector<Eigen::Vector4d> &pointCloud)
 {
     pointCloud_.resize(pointCloud.size(), 4);
     tbb::parallel_for(

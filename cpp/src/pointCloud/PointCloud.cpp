@@ -3,8 +3,16 @@
 PointCloud::PointCloud(const ConfigParser &config)
     : subsampleRadius_(config.getPcSubsampleRadius()),
       maxSensorRange_(config.getMaxSensorRange()),
-      minSensorRange_(config.getMinSensorRange())
+      minSensorRange_(config.getMinSensorRange()),
+      pcRegionOfInterest_(config.getPcRegionOfInterest())
 {
+    std::vector<double> platformToSensor = config.getPlatformToSensor();
+    platformToSensor_ = utils::homogeneous(platformToSensor[0],
+                                           platformToSensor[1],
+                                           platformToSensor[2],
+                                           platformToSensor[3],
+                                           platformToSensor[4],
+                                           platformToSensor[5]);
 }
 
 void PointCloud::readScan(const std::string &fileName)
@@ -51,22 +59,29 @@ void PointCloud::readScan(const std::string &fileName)
     }
 
     // Subsample the point cloud.
-    subsample_(ptCloud_, subsampleRadius_);
+    subsample(ptCloud_, subsampleRadius_);
+
+    transformToPlatformFrame();
+
+    if (pcRegionOfInterest_.size() == 6)
+    {
+        getRegionOfInterest();
+    }
 }
 
-const std::vector<Eigen::Vector4d>& PointCloud::getPtCloud() const
+std::vector<Eigen::Vector4d>& PointCloud::getPtCloud()
 {
     return ptCloud_;
 }
 
-void PointCloud::subsample_(std::vector<Eigen::Vector4d> &pts,
+void PointCloud::subsample(std::vector<Eigen::Vector4d> &pts,
                             double subsampleRadius)
 {
     std::vector<Eigen::Vector4d> ptsSubsampled;
     
     // Nanoflann uses the squared radius.
     subsampleRadius = pow(subsampleRadius, 2);
-    convertToPointCloudKdTree_(pts);
+    convertToPointCloudKdTree(pts);
 
     // Create a Kd tree (dimension, scan, max leaf).
     my_kd_tree_t *scanKdTree = new my_kd_tree_t(3, pcForKdTree_,{10});
@@ -94,7 +109,7 @@ void PointCloud::subsample_(std::vector<Eigen::Vector4d> &pts,
     pts = ptsSubsampled;
 }
 
-void PointCloud::convertToPointCloudKdTree_(
+void PointCloud::convertToPointCloudKdTree(
                  const std::vector<Eigen::Vector4d> &pts)
 {
     size_t pcLength = pts.size();
@@ -102,14 +117,52 @@ void PointCloud::convertToPointCloudKdTree_(
     pcForKdTree_.pts.resize(pcLength);
 
     tbb::parallel_for(
-    tbb::blocked_range<int>(0, pcLength),
-    [&](tbb::blocked_range<int> r)
-    { 
-        for (size_t i = r.begin(); i < r.end(); i++)
+        tbb::blocked_range<int>(0, pcLength),
+        [&](tbb::blocked_range<int> r)
+        { 
+            for (size_t i = r.begin(); i < r.end(); i++)
+            {
+                pcForKdTree_.pts[i].x = pts[i](0);
+                pcForKdTree_.pts[i].y = pts[i](1);
+                pcForKdTree_.pts[i].z = pts[i](2);        
+            } 
+        }
+    );
+}
+
+void PointCloud::transformToPlatformFrame()
+{
+    tbb::parallel_for(
+        tbb::blocked_range<int>(0, ptCloud_.size()),
+        [&](tbb::blocked_range<int> r)
+        { 
+            for (size_t i = r.begin(); i < r.end(); i++)
+            {
+                ptCloud_[i] = platformToSensor_ * ptCloud_[i];  
+            } 
+        }
+    );
+}
+
+void PointCloud::getRegionOfInterest()
+{
+    std::vector<Eigen::Vector4d> ptCloudFiltered;
+    for (int i = 0; i < ptCloud_.size(); i++)
+    {
+        if (!((ptCloud_[i][0] < pcRegionOfInterest_[0]) || (ptCloud_[i][0] > pcRegionOfInterest_[1]) || 
+              (ptCloud_[i][1] < pcRegionOfInterest_[2]) || (ptCloud_[i][1] > pcRegionOfInterest_[3]) || 
+              (ptCloud_[i][2] < pcRegionOfInterest_[4]) || (ptCloud_[i][2] > pcRegionOfInterest_[5])))
         {
-            pcForKdTree_.pts[i].x = pts[i](0);
-            pcForKdTree_.pts[i].y = pts[i](1);
-            pcForKdTree_.pts[i].z = pts[i](2);        
-        } 
-    });
+            ptCloudFiltered.emplace_back(ptCloud_[i]);
+        }
+    }
+    ptCloud_ = ptCloudFiltered;
+}
+
+void PointCloud::printPtCloud()
+{
+    for (const auto &pt : ptCloud_)
+    {
+        std::cout << pt(0) << " " << pt(1) << " " << pt(2) << std::endl;
+    }
 }

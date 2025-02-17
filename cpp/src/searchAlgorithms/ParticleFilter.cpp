@@ -72,6 +72,11 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
         // Calculate the evidence for the hypotheses set.
         evidences = objFunc_->calculateEvidence(hypotheses_);
 
+        // if (iteration == noIterations_)
+        // {
+        //     continue;
+        // }
+
         // Set the evidence for hypotheses out of the search range to 0. TODO: Check this?
         tbb::parallel_for(
             tbb::blocked_range<int>(0, hypotheses_.rows()),
@@ -79,12 +84,12 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
             {
                 for (int kk = r.begin(); kk < r.end(); kk++)
                 {
-                    hypotheses_(kk,0) = std::min(std::max(minDev_[0], hypotheses_(kk,0)), maxDev_[0]);
-                    hypotheses_(kk,1) = std::min(std::max(minDev_[1], hypotheses_(kk,1)), maxDev_[1]);
-                    hypotheses_(kk,2) = std::min(std::max(minDev_[2], hypotheses_(kk,2)), maxDev_[2]);
-                    hypotheses_(kk,3) = std::min(std::max(minDev_[3], hypotheses_(kk,3)), maxDev_[3]);
-                    hypotheses_(kk,4) = std::min(std::max(minDev_[4], hypotheses_(kk,4)), maxDev_[4]);
-                    hypotheses_(kk,5) = std::min(std::max(minDev_[5], hypotheses_(kk,5)), maxDev_[5]);
+                    hypotheses_(kk,0) = std::min(std::max(seed_[0]+minDev_[0], hypotheses_(kk,0)), seed_[0]+maxDev_[0]);
+                    hypotheses_(kk,1) = std::min(std::max(seed_[1]+minDev_[1], hypotheses_(kk,1)), seed_[1]+maxDev_[1]);
+                    hypotheses_(kk,2) = std::min(std::max(seed_[2]+minDev_[2], hypotheses_(kk,2)), seed_[2]+maxDev_[2]);
+                    hypotheses_(kk,3) = std::min(std::max(seed_[3]+minDev_[3], hypotheses_(kk,3)), seed_[3]+maxDev_[3]);
+                    hypotheses_(kk,4) = std::min(std::max(seed_[4]+minDev_[4], hypotheses_(kk,4)), seed_[4]+maxDev_[4]);
+                    hypotheses_(kk,5) = std::min(std::max(seed_[5]+minDev_[5], hypotheses_(kk,5)), seed_[5]+maxDev_[5]);
                 }
             }
         );
@@ -143,7 +148,7 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
                                            &evidences[0]+numberOfHypotheses_);
         int maxElementIndex = std::find(&evidences[0],
                                         &evidences[0]+numberOfHypotheses_,
-                                        maxElement) - &evidences[0]; 
+                                        maxElement) - &evidences[0];
 
         // Resample the hypotheses using the cumulative distribution
         // and the noise generators.

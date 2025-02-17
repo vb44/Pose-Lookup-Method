@@ -28,7 +28,7 @@ class Plum : public ObjectiveFunction
 
         std::vector<int> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
 
-        void setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud) override;
+        void setPointCloud(std::vector<Eigen::Vector4d> &pointCloud) override;
 
     private:
         struct LookupTable

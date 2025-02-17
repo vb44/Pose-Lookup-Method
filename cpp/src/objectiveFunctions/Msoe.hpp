@@ -29,11 +29,14 @@ class Msoe : public ObjectiveFunction
 
         std::vector<int> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
 
-        void setPointCloud(const std::vector<Eigen::Vector4d> &pointCloud) override;
+        void setPointCloud(std::vector<Eigen::Vector4d> &pointCloud) override;
 
     private:
         Eigen::MatrixXd pointCloud_; // nx4 matrix ready for homogeneous transforms
+        Eigen::Matrix4d sensorToPlatform_;
         std::vector<int> evidences_;
+        std::vector<double> platformToSensor_;
+        std::string modelFilePath_;
         Raycaster* raycaster;
         double sigma_;
 };

@@ -128,6 +128,8 @@ void Raycaster::transformGeometry()
 
 void Raycaster::raycast()
 {
+    hits_.clear();
+    hitsValid_.clear();
     hits_.resize(directions_.size());
     hitsValid_.resize(directions_.size(), 0);
     RTCIntersectContext context;

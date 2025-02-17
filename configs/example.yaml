@@ -2,10 +2,12 @@
 method: plum
 
 # Point cloud folder path
-pointCloudFolder: ../../sample_data/point_clouds/
+pointCloudFolder: ../../sample_data/point_clouds2/
 sensorMaxRange: 100
 sensorMinRange: -1
 subsampleRadius: 0
+platformToSensor: [0.0,0.0,0.0,0.0,0.0,0.0]
+pcRegionOfInterest: []
 
 # Lookup table parameters
 lookupTableStepSize: 1
