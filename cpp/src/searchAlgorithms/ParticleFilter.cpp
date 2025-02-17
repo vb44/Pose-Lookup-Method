@@ -1,6 +1,7 @@
 #include "ParticleFilter.hpp"
 
-ParticleFilter::ParticleFilter(const ConfigParser &config, std::shared_ptr<ObjectiveFunction> objFunc) :
+ParticleFilter::ParticleFilter(const ConfigParser &config,
+                               std::shared_ptr<ObjectiveFunction> objFunc) :
     rotSigma_(config.getSearchRotSigma()),
     transSigma_(config.getSearchTransSigma()),
     noIterations_(config.getSearchNoIterations()),
@@ -11,6 +12,7 @@ ParticleFilter::ParticleFilter(const ConfigParser &config, std::shared_ptr<Objec
     stepSizes_(config.getSearchStepSizes())
 {
     objFunc_= std::move(objFunc);
+    // TODO: Fix this.
     hypothesesSampled_.resize(resampleSize_+1, 6);
 }
 
@@ -71,11 +73,6 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
     {
         // Calculate the evidence for the hypotheses set.
         evidences = objFunc_->calculateEvidence(hypotheses_);
-
-        // if (iteration == noIterations_)
-        // {
-        //     continue;
-        // }
 
         // Set the evidence for hypotheses out of the search range to 0. TODO: Check this?
         tbb::parallel_for(
@@ -189,9 +186,13 @@ std::vector<double> ParticleFilter::findBestGeometryPose()
             hypotheses_.resize(resampleSize,6);
             hypotheses_ = hypothesesSampled_;
             numberOfHypotheses_ = resampleSize;
+        } else
+        {
+            break;
         }
     }
 
+    // Find the best hypothesis.
     int maxElement = *std::max_element(&evidences[0],
                                        &evidences[0]+numberOfHypotheses_);
     int maxElementIndex = std::find(&evidences[0],

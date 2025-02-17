@@ -22,20 +22,20 @@ class PointCloud
 {
     public:
         /**
-         * @brief Construct a new Scan object.
+         * @brief Construct a new Point Cloud object.
          * 
          * @param config The algorithm configuration parameters.
          */
         PointCloud(const ConfigParser &config);
         
         /**
-         * @brief Destroy the Scan object.
+         * @brief Destroy the Point Cloud object.
          * 
          */
         ~PointCloud() = default;
 
         /**
-         * @brief Read a new .bin scan file.
+         * @brief Read a new .bin point cloud file (kitti format).
          * 
          * @param fileName Name of the file to read.
          */
@@ -54,10 +54,10 @@ class PointCloud
         // Point cloud subsample radius.
         double subsampleRadius_;
         
-        // Maximum range of the points in the scan.
+        // Maximum range of the points in the point cloud.
         double maxSensorRange_;
 
-        // Minimum range of the points in the scan.
+        // Minimum range of the points in the point cloud.
         double minSensorRange_;
 
         // A container used for radially subsampling the points.
@@ -89,8 +89,23 @@ class PointCloud
         void subsample(std::vector<Eigen::Vector4d> &pts,
                         double subsampleRadius);
 
+        /**
+         * @brief Transform the point cloud from the sensor to platform frame.
+         * 
+         */
         void transformToPlatformFrame();
+        
+        /**
+         * @brief Get the point cloud region of interest, defined in the
+         *        platform frame.
+         * 
+         */
         void getRegionOfInterest();
+
+        /**
+         * @brief Print the point cloud to std::cout.
+         * 
+         */
         void printPtCloud();
 };
 

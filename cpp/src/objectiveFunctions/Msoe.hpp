@@ -17,28 +17,65 @@
 #include "Raycaster.hpp"
 
 /**
- * @brief Handle the algorithm configuration parsing.
+ * @brief The MSoE objective function, described here,
+ *        https://doi.org/10.3390/s21196473.
  * 
  */
 class Msoe : public ObjectiveFunction
 {
     public:
+        /**
+         * @brief Construct a new Msoe object.
+         * 
+         * @param config The algorithm configuration parameters.
+         */
         Msoe(const ConfigParser &config);
 
+        /**
+         * @brief Destroy the Msoe object.
+         * 
+         */
         ~Msoe();
 
+        /**
+         * @brief Calculate the evidence for the hypotheses using the MSoE
+         *        objective function. 
+         * 
+         * @param hypotheses The pose hypotheses to evaluate.
+         * @return std::vector<int> The pose hypotheses rewards.
+         */
         std::vector<int> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
 
+        /**
+         * @brief Set the point cloud used for calculating the objective
+         *        function.
+         * 
+         * @param pointCloud 
+         */
         void setPointCloud(std::vector<Eigen::Vector4d> &pointCloud) override;
 
     private:
-        Eigen::MatrixXd pointCloud_; // nx4 matrix ready for homogeneous transforms
-        Eigen::Matrix4d sensorToPlatform_;
-        std::vector<int> evidences_;
-        std::vector<double> platformToSensor_;
-        std::string modelFilePath_;
-        Raycaster* raycaster;
+        
+        // The MSoE objective function configuration parameter.
         double sigma_;
+ 
+        // The evidences for all hypotheses.
+        std::vector<int> evidences_;
+
+        // The fixed pose estimate from the platform to the sensor frame. 
+        std::vector<double> platformToSensor_;
+
+        // The path to the STL model used for raycasting.
+        std::string modelFilePath_;
+        
+        // A (nx4) matrix ready for homogeneous transformation.
+        Eigen::MatrixXd pointCloud_;
+
+        // The fixed pose estimate from the sensor to the platform frame. 
+        Eigen::Matrix4d sensorToPlatform_;
+
+        // The raycasting application.
+        Raycaster* raycaster;
 };
 
 #endif // MSOE_HPP

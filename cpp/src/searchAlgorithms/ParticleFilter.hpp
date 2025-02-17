@@ -3,8 +3,8 @@
 #ifndef PARTICLE_FILTER_HPP
 #define PARTICLE_FILTER_HPP
 
-#include <fstream>
 #include <functional>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -20,16 +20,35 @@
 #include "utils.hpp"
 
 /**
- * @brief Handle the algorithm configuration parsing.
+ * @brief Particle filter pose search algorithm.
+ *        The pose search algorithm is decribed in Algorithm 1 from
+ *        https://doi.org/10.3390/s21196473.
  * 
  */
 class ParticleFilter
 {
     public:
-        ParticleFilter(const ConfigParser &config, std::shared_ptr<ObjectiveFunction> objFunc);
+        /**
+         * @brief Construct the Particle Filter object.
+         * 
+         * @param config The algorithm configuration parameters.
+         * @param objFunc The objective function used for ranking hypotheses.
+         */
+        ParticleFilter(const ConfigParser &config,
+                        std::shared_ptr<ObjectiveFunction> objFunc);
 
+        /**
+         * @brief Destroy the Particle Filter object.
+         * 
+         */
         ~ParticleFilter() = default;
 
+        /**
+         * @brief Find the best pose hypothesis using the objective function.
+         * 
+         * @return std::vector<double> The pose hypothesis.
+         *         (roll, pitch, yaw, x, y, z) (rad, m).
+         */
         std::vector<double> findBestGeometryPose();
 
     private:
@@ -47,13 +66,18 @@ class ParticleFilter
         std::vector<double> maxDev_;
         std::vector<double> stepSizes_;
 
-        // Random number generation (noise in the particle filter)
+        // Random number generation (noise in the particle filter).
         boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> >* randRot_ = 0;
         boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> >* randTrans_ = 0;
 
         // Objective function that is being maximised.
         std::shared_ptr<ObjectiveFunction> objFunc_;
-
+        
+        /**
+         * @brief Generates uniformly sampled hypotheses for the first
+         *        particle filter iteration. 
+         * 
+         */
         void generateHypotheses();
 };
 

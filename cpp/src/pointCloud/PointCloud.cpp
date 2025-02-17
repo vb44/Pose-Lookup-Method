@@ -61,8 +61,12 @@ void PointCloud::readScan(const std::string &fileName)
     // Subsample the point cloud.
     subsample(ptCloud_, subsampleRadius_);
 
+    // Transform the point cloud to the platform frame.
+    // If the platform frame is not specified, this operation will not change
+    // the point cloud.
     transformToPlatformFrame();
 
+    // Segment points in the region of interest if specified.
     if (pcRegionOfInterest_.size() == 6)
     {
         getRegionOfInterest();
@@ -83,7 +87,7 @@ void PointCloud::subsample(std::vector<Eigen::Vector4d> &pts,
     subsampleRadius = pow(subsampleRadius, 2);
     convertToPointCloudKdTree(pts);
 
-    // Create a Kd tree (dimension, scan, max leaf).
+    // Create a Kd tree (dimension, point cloud, max leaf).
     my_kd_tree_t *scanKdTree = new my_kd_tree_t(3, pcForKdTree_,{10});
     unsigned int counter = 0;
 
@@ -105,7 +109,7 @@ void PointCloud::subsample(std::vector<Eigen::Vector4d> &pts,
     }
     delete scanKdTree;
 
-    // Overwrite the scan with the subsampled points.
+    // Overwrite the point cloud with the subsampled points.
     pts = ptsSubsampled;
 }
 
@@ -147,11 +151,16 @@ void PointCloud::transformToPlatformFrame()
 void PointCloud::getRegionOfInterest()
 {
     std::vector<Eigen::Vector4d> ptCloudFiltered;
+
+    // Save the point cloud measurements in the region of interest.
     for (int i = 0; i < ptCloud_.size(); i++)
     {
-        if (!((ptCloud_[i][0] < pcRegionOfInterest_[0]) || (ptCloud_[i][0] > pcRegionOfInterest_[1]) || 
-              (ptCloud_[i][1] < pcRegionOfInterest_[2]) || (ptCloud_[i][1] > pcRegionOfInterest_[3]) || 
-              (ptCloud_[i][2] < pcRegionOfInterest_[4]) || (ptCloud_[i][2] > pcRegionOfInterest_[5])))
+        if (!((ptCloud_[i][0] < pcRegionOfInterest_[0]) ||
+              (ptCloud_[i][0] > pcRegionOfInterest_[1]) || 
+              (ptCloud_[i][1] < pcRegionOfInterest_[2]) ||
+              (ptCloud_[i][1] > pcRegionOfInterest_[3]) || 
+              (ptCloud_[i][2] < pcRegionOfInterest_[4]) ||
+              (ptCloud_[i][2] > pcRegionOfInterest_[5])))
         {
             ptCloudFiltered.emplace_back(ptCloud_[i]);
         }

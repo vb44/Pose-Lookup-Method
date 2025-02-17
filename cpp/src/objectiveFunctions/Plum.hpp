@@ -16,21 +16,48 @@
 #include "utils.hpp"
 
 /**
- * @brief Handle the algorithm configuration parsing.
+ * @brief The PLuM objective function, described here,
+ *        https://doi.org/10.3390/s23063085.
  * 
  */
 class Plum : public ObjectiveFunction
 {
     public:
+        /**
+         * @brief Construct a new Plum object.
+         * 
+         * @param config The algorithm configuration parameters.
+         */
         Plum(const ConfigParser &config);
 
+        /**
+         * @brief Destroy the Plum object.
+         * 
+         */
         ~Plum();
 
+        /**
+         * @brief Calculate the evidence for the hypotheses using the PLuM
+         *        objective function. 
+         * 
+         * @param hypotheses The pose hypotheses to evaluate.
+         * @return std::vector<int> The pose hypotheses rewards.
+         */
         std::vector<int> calculateEvidence(const Eigen::MatrixXd &hypotheses) override;
 
+        /**
+         * @brief Set the point cloud used for calculating the objective
+         *        function.
+         * 
+         * @param pointCloud 
+         */
         void setPointCloud(std::vector<Eigen::Vector4d> &pointCloud) override;
 
     private:
+        /**
+         * @brief Handles the lookup table configuration and loading.
+         * 
+         */
         struct LookupTable
         {
             double stepSize = 0.0;
@@ -47,7 +74,9 @@ class Plum : public ObjectiveFunction
                 numXyz[0] = round(maxXyz[0]* pointsPerMeter + 1);
                 numXyz[1] = round(maxXyz[1]* pointsPerMeter + 1);
                 numXyz[2] = round(maxXyz[2]* pointsPerMeter + 1);
-                lookupTable = (uint8_t*) malloc(numXyz[0]*numXyz[1]*numXyz[2]*sizeof(uint8_t));
+                lookupTable = (uint8_t*) malloc(numXyz[0]*
+                                                numXyz[1]*
+                                                numXyz[2]*sizeof(uint8_t));
                 if (!lookupTable)
                 {
                     throw std::bad_alloc();
@@ -62,8 +91,13 @@ class Plum : public ObjectiveFunction
             }
         };
 
+        // The lookup table used to compute per-point reward.
         LookupTable lookupTable_;
-        Eigen::MatrixXd pointCloud_; // nx4 matrix ready for homogeneous transforms
+
+        // A (nx4) matrix ready for homogeneous transformation.
+        Eigen::MatrixXd pointCloud_; 
+
+        // The evidences for all hypotheses.
         std::vector<int> evidences_;
 };
 

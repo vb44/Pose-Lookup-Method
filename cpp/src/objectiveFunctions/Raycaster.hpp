@@ -17,6 +17,11 @@
 #include <embree3/rtcore.h>
 #include <tbb/parallel_for.h>
 
+/**
+ * @brief Perform raycasting operations on a STL geometry located at a
+ *        configured pose.  
+ * 
+ */
 class Raycaster
 {
     public:
@@ -41,7 +46,13 @@ class Raycaster
          */
         void computeRays(const std::vector<Eigen::Vector4d> &pointCloud);
 
-
+        /**
+         * @brief Get the raycast results.
+         * 
+         * @return std::pair<std::vector<Eigen::Vector3f>, std::vector<int>>
+         *         The raycast results returned as a pair of the
+         *         intersections and their validity (0 or 1). 
+         */
         std::pair<std::vector<Eigen::Vector3f>, std::vector<int>> getRaycastResults();
 
         /**
@@ -97,7 +108,10 @@ class Raycaster
 
         std::vector<double> platformToSensor_;
 
-        // Transform the geometry at the current pose.
+        /**
+         * @brief Transform the geometry at the current pose. 
+         * 
+         */
         void transformGeometry();
 };
 

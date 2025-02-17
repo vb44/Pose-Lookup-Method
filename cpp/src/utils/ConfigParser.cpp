@@ -52,10 +52,12 @@ int ConfigParser::parseConfig()
         searchMaxDev_ = configFromYaml["searchMaxDev"].as<std::vector<double>>();
         searchStepSizes_ = configFromYaml["searchStepSizes"].as<std::vector<double>>();
 
-    } catch(const YAML::BadFile& e) {
+    } catch(const YAML::BadFile& e)
+    {
         std::cerr << e.what() << std::endl;
         return 1;
-    } catch(const YAML::ParserException& e) {
+    } catch(const YAML::ParserException& e)
+    {
         std::cerr << e.msg << std::endl;
         return 1;
     }

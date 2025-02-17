@@ -2,7 +2,7 @@
 method: plum
 
 # Point cloud folder path
-pointCloudFolder: ../../sample_data/point_clouds2/
+pointCloudFolder: ../../sample_data/point_clouds/
 sensorMaxRange: 100
 sensorMinRange: -1
 subsampleRadius: 0
@@ -11,7 +11,7 @@ pcRegionOfInterest: []
 
 # Lookup table parameters
 lookupTableStepSize: 1
-lookupTableFile: ../../sample_data/bunny_lookupTable
+lookupTableFile: ../../sample_data/lookup_table/bunny.lookup
 lookupTableToModel: [0.0,0.0,0.0,50.0,40.0,10.0] # (rad,rad,rad,m,m,m)
 lookupTableMaxXyz: [100,100,100]
 

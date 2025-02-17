@@ -3,18 +3,21 @@
 Raycaster::Raycaster(const std::string &geometryPath)
     : geometryPath_(geometryPath)
 {
+    // Setup an embree raycasting scene.
     device_ = rtcNewDevice(nullptr);
     embreeScene_ = rtcNewScene(device_);
     geom_ = rtcNewGeometry(device_, RTC_GEOMETRY_TYPE_TRIANGLE);
 
     // Import the geometry.
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(geometryPath_, aiProcess_Triangulate);
+    const aiScene* scene = importer.ReadFile(geometryPath_,
+                                             aiProcess_Triangulate);
     if (!scene || !scene->HasMeshes())
     {
         throw std::runtime_error("pose_estimator: Failed to load STL file");
     }
 
+    // Get the STL model verticies and faces.
     aiMesh* mesh = scene->mMeshes[0];
     originalVertices_.resize(mesh->mNumVertices);
     originalIndices_.resize(mesh->mNumFaces * 3);
@@ -37,7 +40,8 @@ Raycaster::Raycaster(const std::string &geometryPath)
     transformGeometry();
     
     // Avoid optimizations that may reduce algorithmic accuracy
-    rtcSetSceneFlags(embreeScene_, RTC_SCENE_FLAG_DYNAMIC | RTC_SCENE_FLAG_ROBUST);
+    rtcSetSceneFlags(embreeScene_, RTC_SCENE_FLAG_DYNAMIC |
+                                   RTC_SCENE_FLAG_ROBUST);
     rtcCommitScene(embreeScene_);
 
 }
@@ -72,10 +76,12 @@ void Raycaster::computeRays(const std::vector<Eigen::Vector4d> &pointCloud)
             }
         }
     );
-    std::cout << "Finished setting the rays in MSoE: " << directions_.size() << std::endl;
+    std::cout << "Finished setting the rays in MSoE: "
+              << directions_.size() << std::endl;
 }
 
-std::pair<std::vector<Eigen::Vector3f>, std::vector<int>> Raycaster::getRaycastResults()
+std::pair<std::vector<Eigen::Vector3f>,
+          std::vector<int>> Raycaster::getRaycastResults()
 {
     return std::make_pair(hits_, hitsValid_);
 }
@@ -112,9 +118,9 @@ void Raycaster::transformGeometry()
             for (size_t i = r.begin(); i < r.end(); i++)
             {
                 Eigen::Vector4f transformed = geometryPose_ *
-                                    Eigen::Vector4f(originalVertices_[i].x(),
-                                                    originalVertices_[i].y(),
-                                                    originalVertices_[i].z(), 1.0f);
+                    Eigen::Vector4f(originalVertices_[i].x(),
+                                    originalVertices_[i].y(),
+                                    originalVertices_[i].z(), 1.0f);
                 vertices[i] = transformed.head<3>();
             }
         }

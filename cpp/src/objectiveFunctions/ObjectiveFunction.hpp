@@ -5,6 +5,11 @@
 
 #include <Eigen/Dense>
 
+/**
+ * @brief Interface for using different objective functions with the pose
+ *        search algorithm. 
+ * 
+ */
 class ObjectiveFunction
 {
     public:
