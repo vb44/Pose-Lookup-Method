@@ -50,13 +50,11 @@ int main(int argc, char* argv[])
     }
     ParticleFilter partilceFilter(config, objFunc);
 
-    // Loop over all input scans, solve and save the registration estimate.
+    // Loop over all input scans and estimate the registration results.
     for (unsigned int scanNum = 0; scanNum < numScans; scanNum++)
     {
         auto start = std::chrono::high_resolution_clock::now(); 
         pointCloud.readScan(scanFiles[scanNum]);
-
-        // TODO: Add a platform the sensor config
 
         objFunc->setPointCloud(pointCloud.getPtCloud());
 
