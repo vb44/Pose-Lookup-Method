@@ -21,10 +21,7 @@ int ConfigParser::parseConfig()
         if (!poseEstMethod_.compare("plum"))
         {
             // Lookup table
-            lookupTableStepSize_ = configFromYaml["lookupTableStepSize"].as<double>();
             lookupTableFile_ = configFromYaml["lookupTableFile"].as<std::string>();
-            lookupTableToModel_ = configFromYaml["lookupTableToModel"].as<std::vector<double>>();
-            lookupTableMaxXyz_ = configFromYaml["lookupTableMaxXyz"].as<std::vector<double>>();
         } else if (!poseEstMethod_.compare("msoe"))
         {
             sigma_ = configFromYaml["sigma"].as<double>();
@@ -84,24 +81,9 @@ const double ConfigParser::getPcSubsampleRadius() const
     return pcSubsampleRadius_;
 }
 
-const double ConfigParser::getLookupTableStepSize() const
-{
-    return lookupTableStepSize_;
-}
-
 const std::string ConfigParser::getLookupTableFile() const
 {
     return lookupTableFile_;   
-}
-
-const std::vector<double> ConfigParser::getLookupTableToModel() const
-{
-    return lookupTableToModel_;
-}
-
-const std::vector<double> ConfigParser::getLookupTableMaxXyz() const
-{
-    return lookupTableMaxXyz_;
 }
 
 const double ConfigParser::getSearchRotSigma() const

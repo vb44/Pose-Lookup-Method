@@ -12,6 +12,7 @@
 #include "tbb/parallel_for.h"
 
 #include "ConfigParser.hpp"
+#include "ConfigParserLookup.hpp"
 #include "ObjectiveFunction.hpp"
 #include "utils.hpp"
 

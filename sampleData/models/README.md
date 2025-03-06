@@ -1,0 +1,1 @@
+The bunny model is copied and converted from the [The Stanford 3D Scanning Repository](https://graphics.stanford.edu/data/3Dscanrep/).

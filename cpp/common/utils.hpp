@@ -9,9 +9,6 @@
 #include <vector>
 
 #include "eigen3/Eigen/Dense"
-#include "tbb/parallel_for.h"
-
-#include "ConfigParser.hpp"
 
 namespace utils {
 

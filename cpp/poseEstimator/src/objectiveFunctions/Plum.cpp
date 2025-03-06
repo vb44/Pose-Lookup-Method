@@ -2,17 +2,19 @@
 
 Plum::Plum(const ConfigParser &config)
 {
-    lookupTable_.lookupTablePath = config.getLookupTableFile();
-    std::vector<double> lookupToModel = config.getLookupTableToModel();
+    lookupTable_.lookupTablePath = config.getLookupTableFile() + ".lookup";
+    ConfigParserLookup configLookup(config.getLookupTableFile() + ".yaml");
+    configLookup.parseConfig();
+    std::vector<double> lookupToModel = configLookup.getLookupTableToModel();
     lookupTable_.lookupTableToModel = utils::homogeneous(lookupToModel[0],
                                                          lookupToModel[1],
                                                          lookupToModel[2],
                                                          lookupToModel[3],
                                                          lookupToModel[4],
                                                          lookupToModel[5]);
-    lookupTable_.maxXyz = config.getLookupTableMaxXyz();
+    lookupTable_.maxXyz = configLookup.getMaxBounds();
     lookupTable_.numXyz.resize(3);
-    lookupTable_.stepSize = config.getLookupTableStepSize();
+    lookupTable_.stepSize = configLookup.getStepSize();
 
     lookupTable_.readLookupTable();
 }

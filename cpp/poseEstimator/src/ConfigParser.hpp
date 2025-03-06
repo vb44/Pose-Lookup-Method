@@ -90,14 +90,7 @@ class ConfigParser
          *         (xMin, xMax, yMin, yMax, zMin, zMax) (m). 
          */
         const std::vector<double> getPcRegionOfInterest() const;
-        
-        /**
-         * @brief Get the lookup table step size.
-         * 
-         * @return const double Lookup table step size (m). 
-         */
-        const double getLookupTableStepSize() const;
-        
+         
         /**
          * @brief Get the lookup table file.
          * 
@@ -105,24 +98,6 @@ class ConfigParser
          */
         const std::string getLookupTableFile() const;
         
-        /**
-         * @brief Get the homogeneous transform from the lookup table to
-         *        the model.
-         * 
-         * @return const std::vector<double> The 6-DOF homogeneous transform
-         *         from the lookup table to the model.
-         *         (roll, pitch, yaw, x, y, z) (rad, m).
-         */
-        const std::vector<double> getLookupTableToModel() const;
-
-        /**
-         * G@brief Get the maximum bounds of the lookup table.
-         * 
-         * @return const std::vector<double> Lookup table extents.
-         *         (xMax, yMax, zMax) (m). 
-         */
-        const std::vector<double> getLookupTableMaxXyz() const;
-
         /**
          * @brief Get the MSoE sigma configuration.
          * 

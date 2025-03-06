@@ -24,21 +24,24 @@ find_package(TBB REQUIRED)
 find_package(Threads REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/objectiveFunctions
+include_directories(${PROJECT_SOURCE_DIR}/src
+                    ${PROJECT_SOURCE_DIR}/src/objectiveFunctions
                     ${PROJECT_SOURCE_DIR}/src/pointCloud
                     ${PROJECT_SOURCE_DIR}/src/searchAlgorithms
-                    ${PROJECT_SOURCE_DIR}/src/utils)
+                    ${PROJECT_SOURCE_DIR}/../common
+                    ${PROJECT_SOURCE_DIR}/../generateLookupTable/src)
 
 # Define source files.
 set(SOURCES
-    src/main.cpp
-    src/utils/ConfigParser.cpp
+    src/poseEstimator.cpp
+    src/ConfigParser.cpp
     src/searchAlgorithms/ParticleFilter.cpp
     src/objectiveFunctions/Plum.cpp
     src/objectiveFunctions/Msoe.cpp
     src/objectiveFunctions/Raycaster.cpp
     src/pointCloud/PointCloud.cpp
-    src/utils/utils.cpp
+    ../common/utils.cpp
+    ../generateLookupTable/src/ConfigParserLookup.cpp
 )
 
 # Add the executable.

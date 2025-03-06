@@ -1,0 +1,7 @@
+stepSize: 1
+sigma: 1
+modelFileName: ../../../sampleData/models/StanfordBunny.stl
+outputFileName: ../../../sampleData/lookupTables/StanfordBunny
+lookupTableToModel: [0, 0, 0, 50, 40, 10]
+maxBoundsXyz: [100, 100, 100]
+fileGeneratedAt: Thu Mar  6 09:32:03 2025
